@@ -1,0 +1,6 @@
+.build
+*.kdev4
+.qtc_clangd
+.sconsign.dblite
+.vscode
+game
