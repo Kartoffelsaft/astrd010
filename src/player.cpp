@@ -35,7 +35,7 @@ Vector3 Player::getRelPos(Vector3 pos) const {
 Matrix Player::getPlacementIndicatorOrientation() const {
     auto pos = this->getRelPos(Vector3Scale(FORWARD, this->placementIndicator.distance));
     auto indicatorOrientation = MatrixMultiply(
-        this->placementIndicator.rotation,
+        this->placementIndicator.getRotationMatrix(),
         MatrixTranslate(pos.x, pos.y, pos.z)
     );
     

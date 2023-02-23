@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include "raygui.h"
+#include "raymath.h"
 
 #include "mathUtils.h"
 #include "placementIndicator.h"
@@ -12,36 +13,49 @@ std::vector<Mesh> placeableShapes{PLACEABLE_SHAPES_COUNT};
 std::vector<std::vector<Vector3>> placeableSnapPoints{PLACEABLE_SHAPES_COUNT};
 std::vector<Material> placeableTextures{PLACEABLE_TEXTURES_COUNT};
 
+std::vector<float> rotationSnaps = {
+      0.f * DEG2RAD,
+     30.f * DEG2RAD,
+     45.f * DEG2RAD,
+     60.f * DEG2RAD,
+     90.f * DEG2RAD,
+    120.f * DEG2RAD,
+    135.f * DEG2RAD,
+    150.f * DEG2RAD,
+    180.f * DEG2RAD,
+    210.f * DEG2RAD,
+    225.f * DEG2RAD,
+    240.f * DEG2RAD,
+    270.f * DEG2RAD,
+    300.f * DEG2RAD,
+    315.f * DEG2RAD,
+    330.f * DEG2RAD,
+};
+
 void PlacementIndicator::update() {
-    Vector3 rotDelta = Vector3Zero();
-    if (IsKeyDown(KEY_HOME)) {
-        rotDelta = Vector3Add(rotDelta, LEFT);
+    if (IsKeyPressed(KEY_HOME)) {
+        this->rotSnapIndexX = (this->rotSnapIndexX + 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
-    if (IsKeyDown(KEY_END)) {
-        rotDelta = Vector3Add(rotDelta, RIGHT);
+    if (IsKeyPressed(KEY_END)) {
+        this->rotSnapIndexX = (this->rotSnapIndexX - 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
-    if (IsKeyDown(KEY_DELETE)) {
-        rotDelta = Vector3Add(rotDelta, DOWN);
+    if (IsKeyPressed(KEY_DELETE)) {
+        this->rotSnapIndexY = (this->rotSnapIndexY + 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
-    if (IsKeyDown(KEY_PAGE_DOWN)) {
-        rotDelta = Vector3Add(rotDelta, UP);
+    if (IsKeyPressed(KEY_PAGE_DOWN)) {
+        this->rotSnapIndexY = (this->rotSnapIndexY - 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
-    if (IsKeyDown(KEY_INSERT)) {
-        rotDelta = Vector3Add(rotDelta, BACK);
+    if (IsKeyPressed(KEY_INSERT)) {
+        this->rotSnapIndexZ = (this->rotSnapIndexZ + 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
-    if (IsKeyDown(KEY_PAGE_UP)) {
-        rotDelta = Vector3Add(rotDelta, FORWARD);
+    if (IsKeyPressed(KEY_PAGE_UP)) {
+        this->rotSnapIndexZ = (this->rotSnapIndexZ - 1 + rotationSnaps.size()) % rotationSnaps.size();
     }
     
     if (IsKeyPressed(KEY_Z)) {
         this->selectionMenuIsOpen ^= true;
         mouseLookMode = !this->selectionMenuIsOpen;
     }
-
-    this->rotation = MatrixMultiply(
-        MatrixRotateZYX(Vector3Scale(rotDelta, 0.3 * GetFrameTime())),
-        this->rotation
-    );
 
     float selectionChange = GetMouseWheelMove();
     if (selectionChange > 0.f) {
@@ -69,6 +83,14 @@ void PlacementIndicator::drawAt(Matrix const mtx) const {
         mat,
         mtx
     );
+}
+
+Matrix PlacementIndicator::getRotationMatrix() const {
+    return MatrixRotateZYX(Vector3{
+        rotationSnaps[this->rotSnapIndexZ],
+        rotationSnaps[this->rotSnapIndexY],
+        rotationSnaps[this->rotSnapIndexX],
+    });
 }
 
 void setRGBColorPicker(Rectangle bounds, char const * title, Vector3& rgb) {

@@ -23,10 +23,13 @@ enum PlaceableTexture {
 
 
 struct PlacementIndicator {
-    Matrix rotation = MatrixIdentity();
     float distance = 3.0f;
 
     int placeableSelection;
+
+    int rotSnapIndexX = 0;
+    int rotSnapIndexY = 0;
+    int rotSnapIndexZ = 0;
     
     Paintjob paint = Paintjob{
         .primaryColor = Vector3{0.87f, 0.05f, 0.03f},
@@ -38,6 +41,7 @@ struct PlacementIndicator {
     bool selectionMenuIsOpen;
 
     void update();
+    Matrix getRotationMatrix() const;
     void drawAt(Matrix const mtx) const;
     void drawSelectionMenu();
 };

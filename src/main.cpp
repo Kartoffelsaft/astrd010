@@ -74,6 +74,7 @@ Material loadPlaceableMaterial(char const * textureFilename, char const * normal
 
 int main() {
     InitWindow(800, 600, "astrd010");
+    SetTargetFPS(60);
 
     ConstructPart::paintInfo.load(loadShaderPreprocess("resources/shaders/lighting.vs", "resources/shaders/lighting.fs"));
     player.placementIndicator.paintInfo.load(loadShaderPreprocess(nullptr, "resources/shaders/indicator.fs"));
