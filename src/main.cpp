@@ -56,7 +56,9 @@ Mesh LoadMesh(char const * filename) {
     if (model.meshCount != 1) printf("WARNING: unexpected number of meshes in file %s (%d meshes)\n", filename, model.meshCount);
     
     auto ret = model.meshes[0];
-    UnloadModelKeepMeshes(model);
+    for (auto i = 0; i < model.materialCount; i++) {
+        UnloadMaterial(model.materials[i]);
+    }
 
     return ret;
 }

@@ -83,6 +83,12 @@ void PlacementIndicator::drawAt(Matrix const mtx) const {
         mat,
         mtx
     );
+    
+    // auto center = Vector3Transform(Vector3Zero(), mtx);
+    
+    // DrawLine3D(center, Vector3Transform(RIGHT, mtx), YELLOW);
+    // DrawLine3D(center, Vector3Transform(Vector3Transform(UP, MatrixRotateX(rotationSnaps[this->rotSnapIndexX])), mtx), BLUE);
+    // DrawLine3D(center, Vector3Transform(Vector3Transform(FORWARD, MatrixRotateZYX(Vector3{rotationSnaps[this->rotSnapIndexX], rotationSnaps[this->rotSnapIndexY], 0.f})), mtx), RED);
 }
 
 Matrix PlacementIndicator::getRotationMatrix() const {
