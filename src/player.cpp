@@ -96,7 +96,7 @@ void Player::update() {
 
     this->position = Vector3Add(this->position, Vector3Scale(posDelta, 2.0f * GetFrameTime()));
 
-    this->placementIndicator.update();
+    this->placementIndicator.update(this->rotation);
 }
 
 void Player::drawPlacementIndicator() const {

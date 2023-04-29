@@ -1,4 +1,7 @@
 #include <vector>
+#include <array>
+#include <algorithm>
+#include <optional>
 
 #include "raylib.h"
 #include "raygui.h"
@@ -13,48 +16,69 @@ std::vector<Mesh> placeableShapes{PLACEABLE_SHAPES_COUNT};
 std::vector<std::vector<Vector3>> placeableSnapPoints{PLACEABLE_SHAPES_COUNT};
 std::vector<Material> placeableTextures{PLACEABLE_TEXTURES_COUNT};
 
-std::vector<float> rotationSnaps = {
-      0.f * DEG2RAD,
-     30.f * DEG2RAD,
-     45.f * DEG2RAD,
-     60.f * DEG2RAD,
-     90.f * DEG2RAD,
-    120.f * DEG2RAD,
-    135.f * DEG2RAD,
-    150.f * DEG2RAD,
-    180.f * DEG2RAD,
-    210.f * DEG2RAD,
-    225.f * DEG2RAD,
-    240.f * DEG2RAD,
-    270.f * DEG2RAD,
-    300.f * DEG2RAD,
-    315.f * DEG2RAD,
-    330.f * DEG2RAD,
-};
+// std::vector<float> const rotationSnaps = {
+//       0.f * DEG2RAD,
+//      30.f * DEG2RAD,
+//      45.f * DEG2RAD,
+//      60.f * DEG2RAD,
+//      90.f * DEG2RAD,
+//     120.f * DEG2RAD,
+//     135.f * DEG2RAD,
+//     150.f * DEG2RAD,
+//     180.f * DEG2RAD,
+//     210.f * DEG2RAD,
+//     225.f * DEG2RAD,
+//     240.f * DEG2RAD,
+//     270.f * DEG2RAD,
+//     300.f * DEG2RAD,
+//     315.f * DEG2RAD,
+//     330.f * DEG2RAD,
+// };
+// 
+// int rotSnapNext(int const index) { return (index + 1 + rotationSnaps.size()) % rotationSnaps.size(); }
+// int rotSnapPrev(int const index) { return (index - 1 + rotationSnaps.size()) % rotationSnaps.size(); }
 
-void PlacementIndicator::update() {
-    if (IsKeyPressed(KEY_HOME)) {
-        this->rotSnapIndexX = (this->rotSnapIndexX + 1 + rotationSnaps.size()) % rotationSnaps.size();
+constexpr std::vector<Vector3> generateSnapDirections() {
+    auto out = std::vector<Vector3>{};
+
+    for (float x = -2.f; x <= 2.f; x += 1.f) {
+        for (float y = -2.f; y <= 2.f; y += 1.f) {
+            for (float z = -2.f; z <= 2.f; z += 1.f) {
+                if (abs(x) > 1.9f
+                ||  abs(y) > 1.9f
+                ||  abs(z) > 1.9f) {
+                    out.push_back(Vector3Normalize(Vector3{x, y, z}));
+                }
+            }
+        }
     }
-    if (IsKeyPressed(KEY_END)) {
-        this->rotSnapIndexX = (this->rotSnapIndexX - 1 + rotationSnaps.size()) % rotationSnaps.size();
-    }
-    if (IsKeyPressed(KEY_DELETE)) {
-        this->rotSnapIndexY = (this->rotSnapIndexY + 1 + rotationSnaps.size()) % rotationSnaps.size();
-    }
-    if (IsKeyPressed(KEY_PAGE_DOWN)) {
-        this->rotSnapIndexY = (this->rotSnapIndexY - 1 + rotationSnaps.size()) % rotationSnaps.size();
-    }
-    if (IsKeyPressed(KEY_INSERT)) {
-        this->rotSnapIndexZ = (this->rotSnapIndexZ + 1 + rotationSnaps.size()) % rotationSnaps.size();
-    }
-    if (IsKeyPressed(KEY_PAGE_UP)) {
-        this->rotSnapIndexZ = (this->rotSnapIndexZ - 1 + rotationSnaps.size()) % rotationSnaps.size();
+
+    return out;
+}
+std::vector<Vector3> const snapDirs = generateSnapDirections();
+
+void PlacementIndicator::update(Matrix const lookdir) {
+    if (IsKeyDown(KEY_LEFT_CONTROL)) {
+        auto mouseDelta = GetMouseDelta();
+        
+        auto extraRotation = MatrixRotateZYX(Vector3Transform(Vector3{
+            mouseDelta.y * 0.01f,
+            mouseDelta.x * 0.01f, 
+            0.0f
+        }, lookdir));
+
+        this->rotation = MatrixMultiply(this->rotation, extraRotation);
     }
     
     if (IsKeyPressed(KEY_Z)) {
         this->selectionMenuIsOpen ^= true;
         mouseLookMode = !this->selectionMenuIsOpen;
+    }
+
+    if (IsKeyPressed(KEY_LEFT_CONTROL)) mouseLookMode = false;
+    if (IsKeyReleased(KEY_LEFT_CONTROL)) {
+        this->applySnapRotation();
+        mouseLookMode = true;
     }
 
     float selectionChange = GetMouseWheelMove();
@@ -92,11 +116,32 @@ void PlacementIndicator::drawAt(Matrix const mtx) const {
 }
 
 Matrix PlacementIndicator::getRotationMatrix() const {
-    return MatrixRotateZYX(Vector3{
-        rotationSnaps[this->rotSnapIndexZ],
-        rotationSnaps[this->rotSnapIndexY],
-        rotationSnaps[this->rotSnapIndexX],
-    });
+    return this->rotation;
+}
+
+void PlacementIndicator::applySnapRotation() {
+    auto currentDir = Vector3Transform(UP, this->rotation);
+
+    int closestIdx = -1;
+    float closestDist = INFINITY;
+    for (int i = 0; i < snapDirs.size(); i++) {
+        auto dist = Vector3DistanceSqr(currentDir, snapDirs[i]);
+
+        if (dist < closestDist) {
+            closestDist = dist;
+            closestIdx = i;
+        }
+    }
+
+    this->rotation = MatrixInvert(MatrixMultiply(
+        MatrixLookAt(Vector3Zero(), snapDirs[closestIdx], Vector3{0.01f, 0.f, 0.99f}),
+        Matrix{
+            1, 0, 0, 0,
+            0, 0, 1, 0,
+            0,-1, 0, 0,
+            0, 0, 0, 1,
+        }
+    ));
 }
 
 void setRGBColorPicker(Rectangle bounds, char const * title, Vector3& rgb) {

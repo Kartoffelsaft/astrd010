@@ -27,9 +27,7 @@ struct PlacementIndicator {
 
     int placeableSelection;
 
-    int rotSnapIndexX = 0;
-    int rotSnapIndexY = 0;
-    int rotSnapIndexZ = 0;
+    Matrix rotation = MatrixIdentity();
     
     Paintjob paint = Paintjob{
         .primaryColor = Vector3{0.87f, 0.05f, 0.03f},
@@ -40,8 +38,10 @@ struct PlacementIndicator {
     
     bool selectionMenuIsOpen;
 
-    void update();
+    void update(Matrix const lookdir);
     Matrix getRotationMatrix() const;
     void drawAt(Matrix const mtx) const;
     void drawSelectionMenu();
+
+    void applySnapRotation();
 };
