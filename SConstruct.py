@@ -2,12 +2,13 @@ import os
 import sys
 
 BUILD_DIR = '.build'
+SOURCE_DIR = 'src'
 
 BUILD_DIR_SHADER = BUILD_DIR + '/shaders'
-BUILD_DIR_SOURCE = BUILD_DIR + '/src'
+BUILD_DIR_SOURCE = BUILD_DIR + '/' + SOURCE_DIR
 
 env = Environment(
-    CCFLAGS=['-Wall', '-std=c++20'],
+    CCFLAGS=['-Wall', '-std=c++20', '-ffile-prefix-map='+BUILD_DIR_SOURCE+'='+SOURCE_DIR],
     LIBS=['raylib'],
     CPPPATH=['./includes']
 )
