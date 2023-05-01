@@ -22,9 +22,10 @@ auto player = Player{
 };
 
 Matrix getLightView() {
-    auto lightSource = Vector3Add(player.position, Vector3{1.f, 1.f, 0.f});
+    auto lightTarget = Vector3{floorf(player.position.x), floorf(player.position.y), floorf(player.position.z)};
+    auto lightSource = Vector3Add(lightTarget, Vector3{1.f, 1.f, 0.f});
 
-    return MatrixLookAt(lightSource, player.position, UP);
+    return MatrixLookAt(lightSource, lightTarget, UP);
 }
 
 void draw() {

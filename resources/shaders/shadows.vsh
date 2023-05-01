@@ -1,4 +1,4 @@
-#define SHADOW_BIAS 0.005
+#define SHADOW_BIAS 0.002
 #define SHADOWMAP_PRESCALE 0.02
 
 vec4 containToLightView(vec4 pos) {
