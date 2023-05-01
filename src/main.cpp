@@ -13,11 +13,19 @@
 #include "paintjob.h"
 #include "input.h"
 #include "constructpart.h"
+#include "mathUtils.h"
+#include "rlAdditions.h"
 
 auto player = Player{
     .position = Vector3{0.0f, 0.0f, 5.0f},
     .rotation = MatrixIdentity(),
 };
+
+Matrix getLightView() {
+    auto lightSource = Vector3Add(player.position, Vector3{1.f, 1.f, 0.f});
+
+    return MatrixLookAt(lightSource, player.position, UP);
+}
 
 void draw() {
     BeginDrawing(); {
@@ -25,8 +33,18 @@ void draw() {
 
         DrawText("astrd010", 10, 10, 16, RAYWHITE);
         DrawFPS(10, 30);
+        char const * coordStr = TextFormat("x: %f  y: %f  z: %f", player.position.x, player.position.y, player.position.z);
+        DrawText(coordStr, 10, 70, 8, RAYWHITE);
 
-        BeginMode3D(player.GetCamera()); {
+        auto lv = getLightView();
+        SetShaderValueMatrix(ConstructPart::paintInfo.shader, defaultShaderLightViewUniform, lv);
+        BeginTextureMode(shadowMap); ClearBackground(BLACK); BeginViewProjectionMode(lv, MatrixIdentity()); {
+            for (auto m: shipParts) {
+                m.drawShadow();
+            }
+        } EndViewProjectionMode(); EndTextureMode();
+
+        BeginMode3D(player.GetCamera()); {            
             for (auto m: shipParts) {
                 m.draw();
             }
@@ -71,6 +89,8 @@ Material loadPlaceableMaterial(char const * textureFilename, char const * normal
     if (normalMapFilename) ret.maps[1].texture = LoadTexture(normalMapFilename);
     else ret.maps[1].texture = LoadTextureFromImage(GenImageColor(1, 1, Color{127, 127, 255}));
 
+    ret.maps[2].texture = shadowMap.texture;
+
     return ret;
 }
 
@@ -78,8 +98,12 @@ int main() {
     InitWindow(800, 600, "astrd010");
     SetTargetFPS(60);
 
+    shadowShader = loadShadowShader();
+
     ConstructPart::paintInfo.load(loadShaderPreprocess("resources/shaders/lighting.vs", "resources/shaders/lighting.fs"));
+    defaultShaderLightViewUniform = GetShaderLocation(ConstructPart::paintInfo.shader, "lightView");
     player.placementIndicator.paintInfo.load(loadShaderPreprocess(nullptr, "resources/shaders/indicator.fs"));
+    SetShaderValueMatrix(shadowShader, shadowShader.locs[SHADER_LOC_MATRIX_PROJECTION], MatrixIdentity()); // Projection is nonlinear; handled in shader. see: containToLightmap(vec4)
 
     placeableShapes[TUBE] = LoadMesh("./resources/models/tube.obj");
     placeableShapes[CUBE] = LoadMesh("./resources/models/cube.obj");

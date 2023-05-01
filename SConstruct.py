@@ -16,7 +16,7 @@ if ARGUMENTS.get('debug', 0):
     env.Append(CCFLAGS=[
         '-DDEBUG',
         '-O0',
-        '-g'
+        '-g3'
     ])
 
 if ARGUMENTS.get('release', 0):

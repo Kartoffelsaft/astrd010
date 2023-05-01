@@ -11,6 +11,7 @@ struct ConstructPart {
     Matrix where;
 
     void draw();
+    void drawShadow();
 };
 
 extern std::vector<ConstructPart> shipParts;

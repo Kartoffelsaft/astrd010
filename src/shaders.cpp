@@ -1,16 +1,25 @@
 #include "shaders.h"
 
 #include <string>
+#include <sstream>
 #include <optional>
 #include <filesystem>
 #include <fstream>
 
+#include "rlAdditions.h"
+
 Shader defaultShader;
 Shader indicatorShader;
+Shader shadowShader;
+
+Material shadowMaterial;
+RenderTexture2D shadowMap;
 
 int defaultShaderPColorUniform;
 int defaultShaderSColorUniform;
 int defaultShaderTColorUniform;
+
+int defaultShaderLightViewUniform;
 
 int indicatorShaderPColorUniform;
 int indicatorShaderSColorUniform;
@@ -52,8 +61,41 @@ Shader loadShaderPreprocess(char const * vertexShaderFile, char const * fragment
         fshContents = pContents;
     }
     
+    #ifndef NDEBUG
+    if (vshContents.has_value()) {
+        printf("--- %s ---\n", vertexShaderFile);
+        auto vscStream = std::istringstream{*vshContents};
+        int lineNum = 1;
+        for (std::string line; std::getline(vscStream, line); ) {
+            printf("%4d: %s\n", lineNum, line.c_str());
+            lineNum++;
+        }
+
+        printf("\n\n");
+    }
+
+    if (fshContents.has_value()) {
+        printf("--- %s ---\n", fragmentShaderFile);
+        auto fscStream = std::istringstream{*fshContents};
+        int lineNum = 1;
+        for (std::string line; std::getline(fscStream, line); ) {
+            printf("%4d: %s\n", lineNum, line.c_str());
+            lineNum++;
+        }
+    }
+    #endif
+    
     return LoadShaderFromMemory(
         vshContents.has_value()? vshContents->c_str() : nullptr,
         fshContents.has_value()? fshContents->c_str() : nullptr
     );
+}
+
+Shader loadShadowShader() {
+    auto shader = loadShaderPreprocess("resources/shaders/shadows.vs", "resources/shaders/shadows.fs");
+
+    shadowMaterial = LoadMaterialDefault();
+    shadowMaterial.shader = shader;
+
+    shadowMap = LoadShadowMapTexture(2048, 2048);
 }

@@ -10,6 +10,7 @@ in vec4 vertexColor;
 uniform mat4 mvp;
 uniform mat4 matModel;
 uniform mat4 matNormal;
+uniform mat4 lightView;
 
 // Output vertex attributes (to fragment shader)
 out vec3 fragPosition;
@@ -17,8 +18,9 @@ out vec2 fragTexCoord;
 out vec4 fragColor;
 out vec3 fragNormal;
 out mat3 tangentSpace;
+out vec3 shadowMapPos;
 
-// NOTE: Add here your custom variables
+#include "shadows.vsh"
 
 void main()
 {
@@ -35,6 +37,8 @@ void main()
         cross(tangentNormal, fragNormal),
         fragNormal
     );
+
+    shadowMapPos = containToLightmap(lightView*matModel*vec4(vertexPosition, 1.0)).xyz;
 
     // Calculate final vertex position
     gl_Position = mvp*vec4(vertexPosition, 1.0);
