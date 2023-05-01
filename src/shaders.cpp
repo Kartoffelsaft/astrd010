@@ -98,4 +98,7 @@ Shader loadShadowShader() {
     shadowMaterial.shader = shader;
 
     shadowMap = LoadShadowMapTexture(2048, 2048);
+    SetTextureFilter(shadowMap.texture, TEXTURE_FILTER_BILINEAR); // Gives a rounder edge to shadows
+
+    return shader;
 }
