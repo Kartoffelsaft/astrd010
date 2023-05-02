@@ -1,5 +1,7 @@
 #include "paintjob.h"
 
+#include "shaders.h"
+
 void PaintjobShaderInfo::load(Shader shader) {
     this->shader = shader;
     

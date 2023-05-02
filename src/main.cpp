@@ -99,12 +99,10 @@ int main() {
     InitWindow(800, 600, "astrd010");
     SetTargetFPS(60);
 
-    shadowShader = loadShadowShader();
+    initShaders();
 
-    ConstructPart::paintInfo.load(loadShaderPreprocess("resources/shaders/lighting.vs", "resources/shaders/lighting.fs"));
-    defaultShaderLightViewUniform = GetShaderLocation(ConstructPart::paintInfo.shader, "lightView");
-    player.placementIndicator.paintInfo.load(loadShaderPreprocess(nullptr, "resources/shaders/indicator.fs"));
-    SetShaderValueMatrix(shadowShader, shadowShader.locs[SHADER_LOC_MATRIX_PROJECTION], MatrixIdentity()); // Projection is nonlinear; handled in shader. see: containToLightmap(vec4)
+    ConstructPart::paintInfo.load(defaultShader);
+    player.placementIndicator.paintInfo.load(indicatorShader);
 
     placeableShapes[TUBE] = LoadMesh("./resources/models/tube.obj");
     placeableShapes[CUBE] = LoadMesh("./resources/models/cube.obj");

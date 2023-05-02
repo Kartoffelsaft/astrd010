@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "rlAdditions.h"
+#include "raymath.h"
 
 Shader defaultShader;
 Shader indicatorShader;
@@ -91,6 +92,18 @@ Shader loadShaderPreprocess(char const * vertexShaderFile, char const * fragment
     );
 }
 
+Shader loadDefaultShader() {
+    auto shader = loadShaderPreprocess("resources/shaders/lighting.vs", "resources/shaders/lighting.fs");
+
+    return shader;
+}
+
+Shader loadIndicatorShader() {
+    auto shader = loadShaderPreprocess(nullptr, "resources/shaders/indicator.fs");
+
+    return shader;
+}
+
 Shader loadShadowShader() {
     auto shader = loadShaderPreprocess("resources/shaders/shadows.vs", "resources/shaders/shadows.fs");
 
@@ -101,4 +114,12 @@ Shader loadShadowShader() {
     SetTextureFilter(shadowMap.texture, TEXTURE_FILTER_BILINEAR); // Gives a rounder edge to shadows
 
     return shader;
+}
+
+void initShaders() {
+    defaultShader = loadDefaultShader();
+    indicatorShader = loadIndicatorShader();
+    shadowShader = loadShadowShader();
+    defaultShaderLightViewUniform = GetShaderLocation(defaultShader, "lightView");
+    SetShaderValueMatrix(shadowShader, shadowShader.locs[SHADER_LOC_MATRIX_PROJECTION], MatrixIdentity()); // Projection is nonlinear; handled in shader. see: containToLightmap(vec4)
 }
