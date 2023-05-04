@@ -20,8 +20,9 @@ out vec4 finalColor;
 
 #include "textures.fsh"
 #include "shadows.vsh"
+#include "rand.fsh"
 
-#define AMBIENT_BRIGHTNESS 0.05
+#define AMBIENT_BRIGHTNESS 0.1
 
 float getAlignment(vec3 normal) {
     vec3 lightdir = normalize((lightView * vec4(0.0, 0.0, -1.0, 1.0) - lightView * vec4(0.0, 0.0, 0.0, 1.0)).xyz);
@@ -30,10 +31,7 @@ float getAlignment(vec3 normal) {
 }
 
 float getBrightnessByAlignment(float alignment) {
-    if (alignment < -0.1) { return AMBIENT_BRIGHTNESS; }
-    else {
-        return clamp(alignment + 0.1, AMBIENT_BRIGHTNESS, 1.0);
-    }
+    return clamp(floor(alignment * 6.0) / 6.0, AMBIENT_BRIGHTNESS, 1.0);
 }
 
 float getBrightnessByShadow() {

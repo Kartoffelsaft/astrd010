@@ -16,6 +16,8 @@
 #include "mathUtils.h"
 #include "rlAdditions.h"
 
+long long framenumber = 0;
+
 auto player = Player{
     .position = Vector3{0.0f, 0.0f, 5.0f},
     .rotation = MatrixIdentity(),
@@ -23,7 +25,7 @@ auto player = Player{
 
 Matrix getLightView() {
     auto lightTarget = Vector3{floorf(player.position.x), floorf(player.position.y), floorf(player.position.z)};
-    auto lightSource = Vector3Add(lightTarget, Vector3{1.f, 1.f, 0.f});
+    auto lightSource = Vector3Add(lightTarget, Vector3{sinf(framenumber * 0.003f), cosf(framenumber * 0.003f), 0.4f});
 
     return MatrixLookAt(lightSource, lightTarget, UP);
 }
@@ -135,6 +137,8 @@ int main() {
         }
 
         draw();
+
+        framenumber++;
     }
 
     CloseWindow();

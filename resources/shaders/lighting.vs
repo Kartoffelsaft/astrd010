@@ -31,7 +31,7 @@ void main()
     fragNormal = normalize(vec3(matNormal*vec4(vertexNormal, 1.0)));
     
     // unit vector that is perpendicular to the normal
-    vec3 tangentNormal = normalize(cross(fragNormal, fragNormal + fragNormal.zyx + vec3(0, 0, -10)));
+    vec3 tangentNormal = normalize(cross(fragNormal, fragNormal + fragNormal.zyx + vec3(0, 0, -5)));
     tangentSpace = mat3(
         tangentNormal,
         cross(tangentNormal, fragNormal),
